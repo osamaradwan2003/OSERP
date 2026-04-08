@@ -1,0 +1,137 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Models\Tax_category;
+use App\Traits\SearchableTrait;
+use App\Traits\ValidatesInputTrait;
+use App\Traits\DeletesEntitiesTrait;
+use CodeIgniter\HTTP\ResponseInterface;
+use Config\Services;
+
+/**
+ * @property tax_category tax_category
+ */
+class Tax_categories extends Secure_Controller
+{
+    use SearchableTrait;
+    use ValidatesInputTrait;
+    use DeletesEntitiesTrait;
+
+    private Tax_category $tax_category;
+
+    public function __construct()
+    {
+        parent::__construct('tax_categories');
+
+        $this->tax_category = model(Tax_category::class);
+    }
+
+    /**
+     * @return string
+     */
+    public function getIndex(): string
+    {
+        $data['tax_categories_table_headers'] = get_tax_categories_table_headers();
+
+        return view('taxes/tax_categories', $data);
+    }
+
+    /**
+     * Returns tax_category table data rows. This will be called with AJAX.
+     *
+     * @return void
+     */
+    public function getSearch(): ResponseInterface
+    {
+        $params = $this->getSearchParams();
+        $sort = $params['sort'] ?: 'tax_category_id';
+        $order = $this->validateSortOrder($params['order']);
+
+        $tax_categories = $this->tax_category->search($params['search'], $params['limit'], $params['offset'], $sort, $order);
+        $total_rows = $this->tax_category->get_found_rows($params['search']);
+
+        $data_rows = [];
+        foreach ($tax_categories->getResult() as $tax_category) {
+            $data_rows[] = get_tax_categories_data_row($tax_category);
+        }
+
+        return $this->buildSearchResponse($total_rows, $data_rows);
+    }
+
+    /**
+     * @param $row_id
+     * @return ResponseInterface
+     */
+    public function getRow($row_id): ResponseInterface
+    {
+        $data_row = get_tax_categories_data_row($this->tax_category->get_info($row_id));
+
+        return $this->response->setJSON($data_row);
+    }
+
+    /**
+     * @param int $tax_category_id
+     * @return string
+     */
+    public function getView(int $tax_category_id = NEW_ENTRY): string
+    {
+        $data['tax_category_info'] = $this->tax_category->get_info($tax_category_id);
+
+        return view("taxes/tax_category_form", $data);
+    }
+
+
+    /**
+     * @param int $tax_category_id
+     * @return ResponseInterface
+     */
+    public function postSave(int $tax_category_id = NEW_ENTRY): ResponseInterface
+    {
+        $tax_category_data = [
+            'tax_category'       => $this->request->getPost('tax_category', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+            'tax_category_code'  => $this->request->getPost('tax_category_code', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+            'tax_group_sequence' => $this->request->getPost('tax_group_sequence', FILTER_SANITIZE_NUMBER_INT)
+        ];
+
+        if ($this->tax_category->save_value($tax_category_data, $tax_category_id)) {
+            // New tax_category_id
+            if ($tax_category_id == NEW_ENTRY) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => lang('Tax_categories.successful_adding'),
+                    'id'      => $tax_category_data['tax_category_id']
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => lang('Tax_categories.successful_updating'),
+                    'id'      => $tax_category_id
+                ]);
+            }
+        } else {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => lang('Tax_categories.error_adding_updating') . ' ' . $tax_category_data['tax_category'],
+                'id'      => NEW_ENTRY
+            ]);
+        }
+    }
+
+    /**
+     * @return ResponseInterface
+     */
+    public function postDelete(): ResponseInterface
+    {
+        $tax_categories_to_delete = $this->request->getPost('ids', FILTER_SANITIZE_NUMBER_INT);
+
+        if ($this->tax_category->delete_list($tax_categories_to_delete)) {
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => lang('Tax_categories.successful_deleted') . ' ' . count($tax_categories_to_delete) . ' ' . lang('Tax_categories.one_or_multiple')
+            ]);
+        } else {
+            return $this->response->setJSON(['success' => false, 'message' => lang('Tax_categories.cannot_be_deleted')]);
+        }
+    }
+}

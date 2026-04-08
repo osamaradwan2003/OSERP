@@ -1,0 +1,422 @@
+/**
+ * OSPOS Component Styles
+ *
+ * CSS Custom Properties and component styles for the refactored UI.
+ * This file provides theming support and modern styling for components.
+ */
+
+/* CSS Custom Properties for theming */
+:root {
+    /* Colors */
+    --color-primary: #2c3e50;
+    --color-secondary: #18bc9c;
+    --color-danger: #e74c3c;
+    --color-warning: #f39c12;
+    --color-success: #27ae60;
+    --color-info: #3498db;
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+
+    /* Border */
+    --border-radius: 4px;
+    --border-color: #ddd;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+    /* Font sizes */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.85rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+
+    /* Transitions */
+    --transition-fast: 0.15s ease-in-out;
+    --transition-normal: 0.3s ease-in-out;
+}
+
+/* Form Components */
+.form-group-modern {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-label-modern {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+    color: var(--color-primary);
+}
+
+.form-control-modern {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.form-control-modern:focus {
+    outline: none;
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 0 3px rgba(24, 188, 156, 0.2);
+}
+
+/* Button Components */
+.btn-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.btn-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-modern:active {
+    transform: translateY(0);
+}
+
+/* Card Components */
+.card-modern {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-lg);
+}
+
+/* Table Actions */
+.table-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: nowrap;
+}
+
+.table-actions .btn {
+    white-space: nowrap;
+}
+
+/* Required Field Indicator */
+.control-label.required::after {
+    content: " *";
+    color: var(--color-danger);
+    font-weight: bold;
+}
+
+/* Error Message Box */
+.error_message_box {
+    margin-bottom: var(--spacing-md);
+}
+
+/* Help Block */
+.help-block {
+    display: block;
+    margin-top: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: #737373;
+}
+
+/* Panel Enhancements */
+.panel-modern {
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.panel-modern .panel-heading {
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+/* Modal Enhancements */
+.modal-modern .modal-content {
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    border: none;
+}
+
+.modal-modern .modal-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-modern .modal-footer {
+    border-top: 1px solid var(--border-color);
+}
+
+/* Alert Enhancements */
+.alert-modern {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Receipt Styles */
+.receipt-header,
+.receipt-items,
+.receipt-totals,
+.receipt-footer {
+    font-family: "Courier New", monospace;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+    .form-group-sm {
+        flex-direction: column;
+    }
+
+    .form-group-sm .control-label {
+        text-align: left;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-toolbar .btn {
+        margin-bottom: 0.5rem;
+    }
+
+    .table-actions {
+        flex-direction: column;
+    }
+
+    .table-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Show Deleted Toggle Button */
+#toggle_deleted {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+#toggle_deleted:hover {
+    opacity: 1;
+}
+
+#toggle_deleted.btn-warning {
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.4);
+}
+
+@media (max-width: 576px) {
+    .btn-toolbar .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Touch-friendly targets */
+    .btn,
+    .nav > li > a {
+        min-height: 44px;
+        padding: 10px 15px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .print_hide {
+        display: none !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+    }
+
+    .receipt-header,
+    .receipt-items,
+    .receipt-totals,
+    .receipt-footer {
+        page-break-inside: avoid;
+    }
+}
+
+/* Animation for loading states */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.glyphicon.spinning {
+    animation: spin 1s linear infinite;
+}
+
+/* Bootstrap 5 Compatibility Classes */
+/* These classes help with Bootstrap 3 to 5 migration */
+.float-start {
+    float: left !important;
+}
+.float-end {
+    float: right !important;
+}
+
+/* RTL Support */
+[dir="rtl"] .float-start {
+    float: right !important;
+}
+[dir="rtl"] .float-end {
+    float: left !important;
+}
+
+/* Visibility utilities */
+.d-none {
+    display: none !important;
+}
+.d-block {
+    display: block !important;
+}
+.d-inline {
+    display: inline !important;
+}
+.d-inline-block {
+    display: inline-block !important;
+}
+.d-flex {
+    display: flex !important;
+}
+.d-inline-flex {
+    display: inline-flex !important;
+}
+
+@media (min-width: 576px) {
+    .d-sm-none {
+        display: none !important;
+    }
+    .d-sm-block {
+        display: block !important;
+    }
+    .d-sm-inline {
+        display: inline !important;
+    }
+    .d-sm-inline-block {
+        display: inline-block !important;
+    }
+    .d-sm-flex {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .d-md-none {
+        display: none !important;
+    }
+    .d-md-block {
+        display: block !important;
+    }
+    .d-md-inline {
+        display: inline !important;
+    }
+    .d-md-inline-block {
+        display: inline-block !important;
+    }
+    .d-md-flex {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .d-lg-none {
+        display: none !important;
+    }
+    .d-lg-block {
+        display: block !important;
+    }
+    .d-lg-inline {
+        display: inline !important;
+    }
+    .d-lg-inline-block {
+        display: inline-block !important;
+    }
+    .d-lg-flex {
+        display: flex !important;
+    }
+}
+
+/* Spacing utilities */
+.mt-0 {
+    margin-top: 0 !important;
+}
+.mt-1 {
+    margin-top: 0.25rem !important;
+}
+.mt-2 {
+    margin-top: 0.5rem !important;
+}
+.mt-3 {
+    margin-top: 1rem !important;
+}
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
+.mt-5 {
+    margin-top: 3rem !important;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+.mb-1 {
+    margin-bottom: 0.25rem !important;
+}
+.mb-2 {
+    margin-bottom: 0.5rem !important;
+}
+.mb-3 {
+    margin-bottom: 1rem !important;
+}
+.mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+.mb-5 {
+    margin-bottom: 3rem !important;
+}
+
+.p-0 {
+    padding: 0 !important;
+}
+.p-1 {
+    padding: 0.25rem !important;
+}
+.p-2 {
+    padding: 0.5rem !important;
+}
+.p-3 {
+    padding: 1rem !important;
+}
+.p-4 {
+    padding: 1.5rem !important;
+}
+.p-5 {
+    padding: 3rem !important;
+}
+
+/* Text utilities */
+.text-start {
+    text-align: left !important;
+}
+.text-end {
+    text-align: right !important;
+}
+.text-center {
+    text-align: center !important;
+}
