@@ -50,5 +50,7 @@ return [
     "transfers_desc" => "Transfer stock between store locations.",
     "cashflow_categories" => "Cashflow Categories",
     "cashflow_categories_desc" => "Manage cashflow income/outcome categories.",
+    "hr" => "HR Management",
+    "hr_desc" => "Human Resources module for managing employees, shifts, salary rules, attendance, and leave.",
 ];
 
