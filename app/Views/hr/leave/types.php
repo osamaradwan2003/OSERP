@@ -7,7 +7,7 @@
 <div id="required_fields_message"><?= lang('Common.fields_required_message') ?></div>
 <ul id="error_message_box" class="error_message_box"></ul>
 
-<?= form_open('hr/save_leave_type', ['id' => 'leave_type_form', 'class' => 'form-horizontal']) ?>
+<?= form_open('hr/leave_type/save', ['id' => 'leave_type_form', 'class' => 'form-horizontal']) ?>
 
 <div class="form-group">
     <?= form_label(lang('Hr.leave_name'), 'name', ['class' => 'required control-label col-xs-3']) ?>
@@ -50,7 +50,7 @@
             'name' => 'default_days',
             'id' => 'default_days',
             'class' => 'form-control',
-            'value' => $leave_type['default_days'] ?? 0,
+            'value' => (string)($leave_type['default_days'] ?? '0'),
             'type' => 'number',
             'step' => '0.5',
         ]) ?>
@@ -66,7 +66,7 @@
     </div>
 </div>
 
-<?= form_hidden('id', $leave_type['id'] ?? 0) ?>
+<?= form_hidden('id', (string)($leave_type['id'] ?? 0)) ?>
 
 <script type="text/javascript">
 $(document).ready(function() {

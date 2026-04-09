@@ -255,9 +255,9 @@
 
     <div class="row">
         <div class="col-md-2 col-sm-4 col-xs-6">
-            <a href="<?= site_url('hr/profiles') ?>" class="quick-action-card btn btn-default btn-block">
+            <a href="<?= site_url('hr/employees') ?>" class="quick-action-card btn btn-default btn-block">
                 <div class="action-icon"><span class="glyphicon glyphicon-user"></span></div>
-                <div><?= lang('Hr.employee_profiles') ?></div>
+                <div><?= lang('Hr.employees') ?></div>
             </a>
         </div>
 

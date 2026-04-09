@@ -70,6 +70,7 @@ DROP TABLE IF EXISTS `ospos_salary_rules`;
 DROP TABLE IF EXISTS `ospos_salary_rule_groups`;
 DROP TABLE IF EXISTS `ospos_emergency_contacts`;
 DROP TABLE IF EXISTS `ospos_employee_profiles`;
+DROP TABLE IF EXISTS `ospos_employee_attachments`;
 DROP TABLE IF EXISTS `ospos_shifts`;
 DROP TABLE IF EXISTS `ospos_positions`;
 DROP TABLE IF EXISTS `ospos_departments`;
@@ -1832,6 +1833,27 @@ CREATE TABLE `ospos_employee_shifts` (
     CONSTRAINT `fk_employee_shifts_shift` FOREIGN KEY (`shift_id`) REFERENCES `ospos_shifts` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 -- =====================================================
+-- Table: ospos_employee_attachments
+-- =====================================================
+CREATE TABLE `ospos_employee_attachments` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+    `employee_id` int(10) NOT NULL,
+    `doc_type` varchar(50) NOT NULL,
+    `title` varchar(255) NOT NULL,
+    `file_name` varchar(255) NOT NULL,
+    `file_path` varchar(512) NOT NULL,
+    `mime_type` varchar(100) DEFAULT NULL,
+    `file_size` int unsigned DEFAULT 0,
+    `description` text DEFAULT NULL,
+    `expiry_date` date DEFAULT NULL,
+    `is_verified` tinyint(1) DEFAULT 0,
+    `created_at` datetime DEFAULT NULL,
+    `updated_at` datetime DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `employee_id` (`employee_id`),
+    CONSTRAINT `fk_employee_attachments_employee` FOREIGN KEY (`employee_id`) REFERENCES `ospos_employees` (`person_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+-- =====================================================
 -- Default HR Data
 -- =====================================================
 INSERT INTO `ospos_departments` (`name`, `description`, `is_active`) VALUES
@@ -1861,3 +1883,5 @@ INSERT INTO `ospos_salary_rules` (`group_id`, `name`, `code`, `rule_type`, `valu
 (3, 'Tax', 'TAX', 'percentage', 5.00, 'gross', 1),
 (3, 'Social Security', 'SS', 'percentage', 2.00, 'basic', 1),
 (4, 'Overtime Rate', 'OT', 'fixed', 1.50, 'attendance', 1);
+
+

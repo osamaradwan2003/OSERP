@@ -1,6 +1,6 @@
 <?php
 /**
- * @var array $profiles
+ * @var array $employees
  */
 ?>
 
@@ -22,34 +22,9 @@
     font-weight: 600;
     color: #2c3e50;
 }
-.page-header-bar h1 .glyphicon {
-    margin-right: 12px;
-    color: var(--primary);
-}
-.hr-table {
-    background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-.hr-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-}
-.hr-table thead th {
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    border: none;
-    padding: 15px;
-}
-.hr-table tbody td {
-    vertical-align: middle;
-    padding: 12px 15px;
-    border-color: #f0f0f0;
-}
-.hr-table tbody tr:hover { background-color: #f8f9ff; }
+.page-header-bar h1 .glyphicon { margin-right: 12px; color: var(--primary); }
+.breadcrumb-bar { margin-bottom: 20px; }
+.breadcrumb-bar .breadcrumb { margin: 0; padding: 10px 0; background: transparent; }
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -63,42 +38,6 @@
 .status-badge.on_leave { background: #fff3cd; color: #856404; }
 .status-badge.suspended { background: #f8d7da; color: #721c24; }
 .status-badge.terminated { background: #e2e3e5; color: #383d41; }
-.employee-cell {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.employee-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-}
-.emp-number {
-    font-family: monospace;
-    background: #f0f0f0;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-}
-.salary-badge {
-    background: #e8f5e9;
-    color: #2e7d32;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-weight: 600;
-}
-.breadcrumb-bar { margin-bottom: 20px; }
-.breadcrumb-bar .breadcrumb {
-    margin: 0;
-    padding: 10px 0;
-    background: transparent;
-}
 </style>
 
 <div class="hr-page">
@@ -106,76 +45,69 @@
         <ol class="breadcrumb">
             <li><a href="<?= site_url() ?>"><?= lang('Module.home') ?></a></li>
             <li><a href="<?= site_url('hr') ?>"><?= lang('Hr.hr_dashboard') ?></a></li>
-            <li class="active"><?= lang('Hr.employee_profiles') ?></li>
+            <li class="active"><?= lang('Hr.employees') ?></li>
         </ol>
     </div>
 
     <div class="page-header-bar">
-        <h1><span class="glyphicon glyphicon-user"></span> <?= lang('Hr.employee_profiles') ?></h1>
+        <h1><span class="glyphicon glyphicon-user"></span> <?= lang('Hr.employees') ?></h1>
         <div>
-            <a href="<?= site_url('hr/employees') ?>" class="btn btn-primary btn-lg">
+            <button class="btn btn-primary btn-lg modal-dlg" data-btn-submit="<?= lang('Common.submit') ?>" 
+                    data-href="<?= site_url('hr/employee') ?>" title="<?= lang('Hr.add_employee') ?>">
                 <span class="glyphicon glyphicon-plus"></span> <?= lang('Hr.add_employee') ?>
-            </a>
+            </button>
         </div>
     </div>
 
-    <div class="hr-table">
+    <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
-                    <th style="width: 50px;"><?= lang('Common.id') ?></th>
+                    <th style="width: 60px;"><?= lang('Common.id') ?></th>
                     <th><?= lang('Hr.employee') ?></th>
                     <th style="width: 120px;"><?= lang('Hr.employee_number') ?></th>
-                    <th style="width: 130px;"><?= lang('Hr.department') ?></th>
-                    <th style="width: 130px;"><?= lang('Hr.position') ?></th>
+                    <th><?= lang('Hr.department') ?></th>
+                    <th><?= lang('Hr.position') ?></th>
                     <th style="width: 120px;"><?= lang('Hr.basic_salary') ?></th>
                     <th style="width: 100px;"><?= lang('Hr.hire_date') ?></th>
-                    <th style="width: 110px;"><?= lang('Hr.status') ?></th>
+                    <th style="width: 110px;"><?= lang('Common.status') ?></th>
                     <th style="width: 80px;"><?= lang('Common.actions') ?></th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($profiles as $profile): ?>
+                <?php foreach ($employees as $emp): ?>
+                    <?php 
+                    $status = $emp['employment_status'] ?? 'active';
+                    $fullName = trim(($emp['first_name'] ?? '') . ' ' . ($emp['last_name'] ?? ''));
+                    ?>
                     <tr>
-                        <td><?= $profile['employee_id'] ?></td>
+                        <td><?= str_pad($emp['id'], 4, '0', STR_PAD_LEFT) ?></td>
                         <td>
-                            <div class="employee-cell">
-                                <div class="employee-avatar">
-                                    <?= strtoupper(substr($profile['first_name'] ?? 'U', 0, 1)) ?>
-                                </div>
-                                <strong><?= esc($profile['first_name'] . ' ' . $profile['last_name']) ?></strong>
-                            </div>
+                            <strong><?= esc($fullName ?: '<span class="text-muted">N/A</span>') ?></strong>
+                            <br><small class="text-muted"><?= esc($emp['email'] ?? '') ?></small>
                         </td>
+                        <td><?= esc($emp['employee_number'] ?? '—') ?></td>
+                        <td><?= esc($emp['department_name'] ?? '—') ?></td>
+                        <td><?= esc($emp['position_name'] ?? '—') ?></td>
+                        <td><?= to_currency($emp['basic_salary'] ?? 0) ?></td>
+                        <td><?= $emp['hire_date'] ? date('d M Y', strtotime($emp['hire_date'])) : '—' ?></td>
                         <td>
-                            <?php if (!empty($profile['employee_number'])): ?>
-                                <code class="emp-number"><?= esc($profile['employee_number']) ?></code>
-                            <?php else: ?>
-                                <span class="text-muted">—</span>
-                            <?php endif; ?>
-                        </td>
-                        <td><span class="text-primary"><?= esc($profile['department_name'] ?? '—') ?></span></td>
-                        <td><span class="text-info"><?= esc($profile['position_name'] ?? '—') ?></span></td>
-                        <td><span class="salary-badge"><?= to_currency($profile['basic_salary'] ?? 0) ?></span></td>
-                        <td>
-                            <?php if (!empty($profile['hire_date'])): ?>
-                                <span class="text-muted"><?= date('d M Y', strtotime($profile['hire_date'])) ?></span>
-                            <?php else: ?>
-                                <span class="text-muted">—</span>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <?php $status = $profile['employment_status'] ?? 'active'; ?>
                             <span class="status-badge <?= $status ?>"><?= lang("Hr.status_{$status}") ?></span>
                         </td>
                         <td>
-                            <button class="btn btn-warning btn-xs modal-dlg" data-btn-submit="<?= lang('Common.submit') ?>"
-                                    data-href="<?= site_url("hr/profile/{$profile['employee_id']}") ?>" title="<?= lang('Common.edit') ?>">
-                                <span class="glyphicon glyphicon-pencil"></span>
-                            </button>
+                            <div class="btn-group btn-group-xs">
+                                <a class="btn btn-info" href="<?= site_url("hr/employee/info/{$emp['employee_id']}") ?>" title="<?= lang('Common.view') ?>">
+                                    <span class="glyphicon glyphicon-eye-open"></span>
+                                </a>
+                                <button class="btn btn-warning modal-dlg" data-btn-submit="<?= lang('Common.submit') ?>"
+                                        data-href="<?= site_url("hr/employee/{$emp['employee_id']}") ?>" title="<?= lang('Common.edit') ?>">
+                                    <span class="glyphicon glyphicon-pencil"></span>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
-                <?php if (empty($profiles)): ?>
+                <?php if (empty($employees)): ?>
                     <tr>
                         <td colspan="9" class="text-center text-muted" style="padding: 40px;">
                             <span class="glyphicon glyphicon-folder-open" style="font-size: 48px; opacity: 0.3;"></span>
@@ -207,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     return $content;
                 },
-                size: BootstrapDialog.SIZE_NORMAL,
+                size: BootstrapDialog.SIZE_WIDE,
                 buttons: [{
                     label: btnSubmit,
                     cssClass: 'btn-primary',

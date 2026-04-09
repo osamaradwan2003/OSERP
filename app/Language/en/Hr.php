@@ -179,6 +179,9 @@ return [
     'leave_code' => 'Leave Code',
     'new_leave_type' => 'New Leave Type',
     'days' => 'days',
+    'leave_balance' => 'Your Leave Balance',
+    'remaining' => 'remaining',
+    'leave_history' => 'Leave History',
 
     // Common
     'name' => 'Name',
@@ -199,4 +202,88 @@ return [
     'basic_salary' => 'Basic Salary',
     'gross_salary' => 'Gross Salary',
     'attendance' => 'Attendance',
+
+    // Employee Management
+    'employees' => 'Employees',
+    'add_employee' => 'Add Employee',
+    'edit_employee' => 'Edit Employee',
+    'personal_info' => 'Personal Information',
+    'login_info' => 'Login Information',
+    'hr_profile' => 'HR Profile',
+    'has_login_account' => 'Has Login Account',
+    'login_account_info' => 'Enable login account to allow this employee to access the system',
+    'username' => 'Username',
+    'password' => 'Password',
+    'repeat_password' => 'Repeat Password',
+    'leave_empty_keep_current' => 'Leave empty to keep current password',
+    'username_required_when_login' => 'Username is required when login account is enabled',
+    
+    // Personal Info
+    'first_name' => 'First Name',
+    'last_name' => 'Last Name',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'address' => 'Address',
+    'city' => 'City',
+    'state' => 'State/Province',
+    'zip' => 'ZIP/Postal Code',
+    'country' => 'Country',
+    'comments' => 'Comments',
+    
+    // Countries list
+    'select_country' => 'Select Country',
+    'select_city' => 'Select City',
+    
+    // Attachments
+    'attachments' => 'Attachments',
+    'documents' => 'Documents',
+    'add_document' => 'Add Document',
+    'upload_document' => 'Upload Document',
+    'document_type' => 'Document Type',
+    'document_title' => 'Document Title',
+    'expiry_date' => 'Expiry Date',
+    'verified' => 'Verified',
+    'not_verified' => 'Not Verified',
+    'verify' => 'Verify',
+    'file' => 'File',
+    'file_name' => 'File Name',
+    'file_size' => 'File Size',
+    'file_type' => 'File Type',
+    'no_attachments' => 'No documents attached',
+    'drag_drop_upload' => 'Drag and drop files here or click to browse',
+    'max_file_size' => 'Maximum file size: 5MB',
+    'allowed_file_types' => 'Allowed types: PDF, JPG, PNG, DOC, DOCX',
+    'delete_attachment' => 'Delete Attachment',
+    'confirm_delete_attachment' => 'Are you sure you want to delete this attachment?',
+    'attachment_deleted' => 'Attachment deleted successfully',
+    'attachment_uploaded' => 'Document uploaded successfully',
+    
+    // Document Types
+    'doc_type_id' => 'National ID',
+    'doc_type_passport' => 'Passport',
+    'doc_type_resume' => 'Resume/CV',
+    'doc_type_contract' => 'Employment Contract',
+    'doc_type_certificate' => 'Certificate/Degree',
+    'doc_type_license' => 'Work Permit/License',
+    'doc_type_other' => 'Other',
+    
+    'please_select_file' => 'Please select a file to upload',
+    'allowed_file_types' => 'Allowed file types: PDF, JPG, PNG, DOC, DOCX',
+    'max_file_size' => 'Maximum file size',
+    
+    // Employee Info Page
+    'no_attendance_records' => 'No attendance records found',
+    'no_leave_requests' => 'No leave requests found',
+    'no_salary_records' => 'No salary records found',
+    'employee_details' => 'Employee Details',
+    'login_info_not_editable' => 'Login info cannot be edited here',
+    
+    // PDF Export
+    'export_pdf' => 'Export PDF',
+    'preview_pdf' => 'Preview PDF',
+    'download_pdf' => 'Download PDF',
+    'generated_on' => 'Generated on',
+    
+    // Attachments Export
+    'download_all_attachments' => 'Download All (ZIP)',
 ];

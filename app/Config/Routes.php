@@ -158,6 +158,22 @@ $routes->group('hr', function($routes) {
     $routes->get('profile', 'Hr::getProfile');
     $routes->post('profile/save', 'Hr::postSaveProfile');
     
+    // Employee Management
+    $routes->get('employees', 'Hr::getEmployees');
+    $routes->get('employee/(:num)', 'Hr::getEmployee/$1');
+    $routes->get('employee', 'Hr::getEmployee');
+    $routes->get('employee/info/(:num)', 'Hr::getEmployeeInfo/$1');
+    $routes->get('employee/pdf/(:num)', 'Hr::getEmployeePdf/$1');
+    $routes->get('employee/pdf_preview/(:num)', 'Hr::getEmployeePdfPreview/$1');
+    $routes->get('employee/attachments/zip/(:num)', 'Hr::getEmployeeAttachmentsZip/$1');
+    $routes->post('employee/save', 'Hr::postSaveEmployee');
+    $routes->post('employee/save/(:num)', 'Hr::postSaveEmployee/$1');
+    
+    // Employee Attachments
+    $routes->post('attachment/upload', 'Hr::postUploadAttachment');
+    $routes->post('attachment/delete', 'Hr::postDeleteAttachment');
+    $routes->get('attachment/download/(:num)', 'Hr::getDownloadAttachment/$1');
+    
     // Salary Rules
     $routes->get('salary_rules', 'Hr::getSalaryRules');
     $routes->get('salary_rule/(:num)', 'Hr::getSalaryRule/$1');

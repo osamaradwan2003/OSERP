@@ -158,6 +158,9 @@
             <?= lang('Hr.leave_requests') ?>
         </h1>
         <div>
+            <a href="<?= site_url('hr/leave_types') ?>" class="btn btn-info">
+                <span class="glyphicon glyphicon-cog"></span> <?= lang('Hr.leave_types') ?>
+            </a>
             <button class="btn btn-primary btn-lg modal-dlg" data-btn-submit="<?= lang('Common.submit') ?>" 
                     data-href="<?= site_url('hr/leave_request') ?>" title="<?= lang('Hr.new_request') ?>">
                 <span class="glyphicon glyphicon-plus"></span> <?= lang('Hr.new_request') ?>

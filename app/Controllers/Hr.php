@@ -3,9 +3,11 @@
 namespace App\Controllers;
 
 use App\Models\Employee;
+use function Tamtamchik\NameCase\str_name_case;
 use App\Models\Hr\Attendance;
 use App\Models\Hr\Department;
 use App\Models\Hr\EmployeeLeaveBalance;
+use App\Models\Hr\EmployeeAttachment;
 use App\Models\Hr\EmployeeProfile;
 use App\Models\Hr\EmployeeSalaryRule;
 use App\Models\Hr\EmployeeShift;
@@ -35,6 +37,7 @@ class Hr extends Secure_Controller
     private LeaveRequest $leaveRequest;
     private EmployeeLeaveBalance $leaveBalance;
     private SalaryCalculator $salaryCalculator;
+    private EmployeeAttachment $employeeAttachment;
     protected Employee $employee;
 
     public function __construct()
@@ -55,7 +58,25 @@ class Hr extends Secure_Controller
         $this->leaveRequest = new LeaveRequest();
         $this->leaveBalance = new EmployeeLeaveBalance();
         $this->salaryCalculator = new SalaryCalculator();
+        $this->employeeAttachment = new EmployeeAttachment();
         $this->employee = new Employee();
+    }
+
+    protected function nameize(string $input): string
+    {
+        if (empty($input)) {
+            return '';
+        }
+
+        if (function_exists('str_name_case')) {
+            $adjusted_name = str_name_case($input);
+
+            return preg_replace_callback('/&[a-zA-Z0-9#]+;/', function ($matches) {
+                return strtolower($matches[0]);
+            }, $adjusted_name);
+        }
+
+        return ucwords(strtolower($input));
     }
 
     public function getIndex(): string
@@ -332,6 +353,481 @@ class Hr extends Secure_Controller
         ]);
     }
 
+    // ============ Employee Management ============
+
+    public function getEmployees(): string
+    {
+        $data['employees'] = $this->employeeProfile->get_all_with_details();
+        return view('hr/employees/manage', $data);
+    }
+
+    public function getEmployee(int $employeeId = 0): string
+    {
+        $person_info = null;
+        $profile = [];
+
+        if ($employeeId > 0) {
+            $person_info = $this->employee->get_info($employeeId);
+            $profile = $this->employeeProfile->get_info($employeeId) ?? [];
+        }
+
+        if (!$person_info) {
+            $person_info = (object)[
+                'person_id' => '',
+                'first_name' => '',
+                'last_name' => '',
+                'email' => '',
+                'phone_number' => '',
+                'address' => '',
+                'city' => '',
+                'state' => '',
+                'zip' => '',
+                'country' => '',
+                'comments' => '',
+                'username' => '',
+                'language' => ''
+            ];
+        }
+
+        $data = [
+            'employee_id' => $employeeId ?: 0,
+            'person_info' => $person_info,
+            'profile' => $profile,
+            'department_options' => $this->department->get_options(),
+            'position_options' => $this->position->get_options(),
+            'shift_options' => $this->shift->get_simple_options(),
+            'attachments' => $employeeId > 0 ? $this->employeeAttachment->get_by_employee($employeeId) : [],
+        ];
+
+        return view('hr/employees/form', $data);
+    }
+
+    public function getEmployeeInfo(int $employeeId)
+    {
+        $employee = $this->employee->get_info($employeeId);
+        
+        if (!$employee) {
+            return redirect()->to('hr/employees')->with('error', lang('Hr.employee_not_found'));
+        }
+
+        $employeeArray = (array) $employee;
+        $profile = $this->employeeProfile->get_info($employeeId) ?? [];
+        $attachments = $this->employeeAttachment->get_by_employee($employeeId);
+        
+        // Get attendance history (last 30 days)
+        $startDate = date('Y-m-01');
+        $endDate = date('Y-m-t');
+        $attendance_history = $this->attendance->get_by_employee($employeeId, $startDate, $endDate);
+        
+        // Get leave history
+        $leave_history = $this->leaveRequest->get_employee_requests($employeeId);
+        
+        // Get leave balances for this employee
+        $leave_balances = $this->getEmployeeLeaveBalances($employeeId);
+        
+        // Get recent salary (if salary calculator service exists)
+        $recent_salary = [];
+        if (isset($this->salaryCalculator)) {
+            $periodStart = date('Y-m-01', strtotime('-1 month'));
+            $periodEnd = date('Y-m-t', strtotime('-1 month'));
+            $recent_salary = $this->salaryCalculator->calculate($employeeId, $periodStart, $periodEnd);
+            $recent_salary = $recent_salary['success'] ? $recent_salary['payslip'] ?? [] : [];
+        }
+
+        // Country options for inline edit
+        $countries = [
+            'United States' => 'United States',
+            'United Kingdom' => 'United Kingdom',
+            'Canada' => 'Canada',
+            'Australia' => 'Australia',
+            'Germany' => 'Germany',
+            'France' => 'France',
+            'Spain' => 'Spain',
+            'Italy' => 'Italy',
+            'Netherlands' => 'Netherlands',
+            'UAE' => 'United Arab Emirates',
+            'Saudi Arabia' => 'Saudi Arabia',
+            'Other' => 'Other',
+        ];
+
+        $data = [
+            'employee' => $employeeArray,
+            'profile' => $profile,
+            'attachments' => $attachments,
+            'attendance_history' => $attendance_history,
+            'leave_history' => $leave_history,
+            'leave_balances' => $leave_balances,
+            'recent_salary' => $recent_salary,
+            'countries' => $countries,
+            'department_options' => $this->department->get_options(),
+            'position_options' => $this->position->get_options(),
+            'shift_options' => $this->shift->get_simple_options(),
+        ];
+
+        return view('hr/employees/info', $data);
+    }
+
+    public function getEmployeePdfPreview(int $employeeId)
+    {
+        $employee = $this->employee->get_info($employeeId);
+        
+        if (!$employee) {
+            return redirect()->to('hr/employees')->with('error', lang('Hr.employee_not_found'));
+        }
+
+        $employeeArray = (array) $employee;
+        $profile = $this->employeeProfile->get_info($employeeId) ?? [];
+        $attachments = $this->employeeAttachment->get_by_employee($employeeId);
+        
+        // Get recent salary
+        $recent_salary = [];
+        if (isset($this->salaryCalculator)) {
+            $periodStart = date('Y-m-01', strtotime('-1 month'));
+            $periodEnd = date('Y-m-t', strtotime('-1 month'));
+            $recent_salary = $this->salaryCalculator->calculate($employeeId, $periodStart, $periodEnd);
+            $recent_salary = $recent_salary['success'] ? $recent_salary['payslip'] ?? [] : [];
+        }
+
+        $data = [
+            'employee' => $employeeArray,
+            'profile' => $profile,
+            'attachments' => $attachments,
+            'recent_salary' => $recent_salary,
+        ];
+
+        return view('hr/employees/pdf_template', $data);
+    }
+
+    public function getEmployeePdf(int $employeeId)
+    {
+        $employee = $this->employee->get_info($employeeId);
+        
+        if (!$employee) {
+            return redirect()->to('hr/employees')->with('error', lang('Hr.employee_not_found'));
+        }
+
+        $employeeArray = (array) $employee;
+        $profile = $this->employeeProfile->get_info($employeeId) ?? [];
+        $attachments = $this->employeeAttachment->get_by_employee($employeeId);
+        
+        // Get recent salary
+        $recent_salary = [];
+        if (isset($this->salaryCalculator)) {
+            $periodStart = date('Y-m-01', strtotime('-1 month'));
+            $periodEnd = date('Y-m-t', strtotime('-1 month'));
+            $recent_salary = $this->salaryCalculator->calculate($employeeId, $periodStart, $periodEnd);
+            $recent_salary = $recent_salary['success'] ? $recent_salary['payslip'] ?? [] : [];
+        }
+
+        $data = [
+            'employee' => $employeeArray,
+            'profile' => $profile,
+            'attachments' => $attachments,
+            'recent_salary' => $recent_salary,
+        ];
+
+        $html = view('hr/employees/pdf_template', $data);
+        
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        $filename = 'Employee_' . preg_replace('/[^a-zA-Z0-9]/', '_', $employeeArray['first_name'] . '_' . $employeeArray['last_name']) . '_' . date('Ymd') . '.pdf';
+        
+        $dompdf->stream($filename, ['Attachment' => true]);
+        exit;
+    }
+
+    public function getEmployeeAttachmentsZip(int $employeeId): ResponseInterface
+    {
+        $employee = $this->employee->get_info($employeeId);
+        
+        if (!$employee) {
+            return redirect()->to('hr/employees')->with('error', lang('Hr.employee_not_found'));
+        }
+
+        $attachments = $this->employeeAttachment->get_by_employee($employeeId);
+        
+        if (empty($attachments)) {
+            return redirect()->to('hr/employee/info/' . $employeeId)->with('error', lang('Hr.no_attachments'));
+        }
+
+        $employeeArray = (array) $employee;
+        $zipFilename = 'Employee_' . preg_replace('/[^a-zA-Z0-9]/', '_', $employeeArray['first_name'] . '_' . $employeeArray['last_name']) . '_Documents_' . date('Ymd') . '.zip';
+        
+        $zip = new \ZipArchive();
+        $zipPath = WRITEPATH . 'temp/' . $zipFilename;
+        
+        if (!is_dir(WRITEPATH . 'temp')) {
+            mkdir(WRITEPATH . 'temp', 0755, true);
+        }
+        
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
+            // Add index file with employee info
+            $indexContent = "EMPLOYEE DOCUMENTS INDEX\n";
+            $indexContent .= "========================\n\n";
+            $indexContent .= "Employee: " . $employeeArray['first_name'] . ' ' . $employeeArray['last_name'] . "\n";
+            $indexContent .= "Employee Number: " . ($this->employeeProfile->get_info($employeeId)['employee_number'] ?? 'N/A') . "\n";
+            $indexContent .= "Generated: " . date('Y-m-d H:i:s') . "\n\n";
+            $indexContent .= "DOCUMENTS:\n";
+            $indexContent .= "----------\n\n";
+            
+            foreach ($attachments as $i => $attachment) {
+                $filePath = FCPATH . $attachment['file_path'];
+                if (file_exists($filePath)) {
+                    $extension = pathinfo($attachment['file_name'], PATHINFO_EXTENSION);
+                    $newFilename = ($i + 1) . '_' . lang('Hr.doc_type_' . $attachment['doc_type']) . '_' . $attachment['file_name'];
+                    $zip->addFile($filePath, $newFilename);
+                    
+                    $indexContent .= ($i + 1) . ". " . lang('Hr.doc_type_' . $attachment['doc_type']) . "\n";
+                    $indexContent .= "   Title: " . $attachment['title'] . "\n";
+                    $indexContent .= "   File: " . $newFilename . "\n";
+                    $indexContent .= "   Expiry: " . ($attachment['expiry_date'] ? date('Y-m-d', strtotime($attachment['expiry_date'])) : 'N/A') . "\n";
+                    $indexContent .= "   Verified: " . ($attachment['is_verified'] ? 'Yes' : 'No') . "\n\n";
+                }
+            }
+            
+            $zip->addFromString('index.txt', $indexContent);
+            $zip->close();
+            
+            return $this->response
+                ->setHeader('Content-Type', 'application/zip')
+                ->setHeader('Content-Disposition', 'attachment; filename="' . $zipFilename . '"')
+                ->setBody(file_get_contents($zipPath));
+        }
+        
+        return redirect()->to('hr/employee/info/' . $employeeId)->with('error', lang('Common.error'));
+    }
+
+    public function postSaveEmployee(int $employeeId = 0): ResponseInterface
+    {
+        $first_name = $this->request->getPost('first_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        $last_name = $this->request->getPost('last_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        $email = strtolower($this->request->getPost('email', FILTER_SANITIZE_EMAIL));
+
+        $first_name = $this->nameize($first_name);
+        $last_name = $this->nameize($last_name);
+
+        $person_data = [
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $email,
+            'phone_number' => $this->request->getPost('phone_number', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+            'address_1' => $this->request->getPost('address', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+            'city' => $this->request->getPost('city', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+            'state' => $this->request->getPost('state', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+            'zip' => $this->request->getPost('zip', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+            'country' => $this->request->getPost('country', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+            'comments' => $this->request->getPost('comments', FILTER_SANITIZE_FULL_SPECIAL_CHARS)
+        ];
+
+        $username = $this->request->getPost('username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        $password = $this->request->getPost('password');
+        $language = $this->request->getPost('language', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        $has_login_account = $this->request->getPost('has_login_account') == 1;
+
+        $employee_data = [];
+        if ($has_login_account && !empty($username)) {
+            $exploded = explode(':', $language);
+            $employee_data = [
+                'username' => $username,
+                'language_code' => $exploded[0] ?? '',
+                'language' => $exploded[1] ?? ''
+            ];
+
+            if (!empty($password)) {
+                $employee_data['password'] = password_hash($password, PASSWORD_DEFAULT);
+                $employee_data['hash_version'] = 2;
+            }
+        }
+
+        $grants_array = [];
+        if ($employeeId == 0 && $has_login_account) {
+            $grants_array[] = ['permission_id' => 'hr', 'menu_group' => 'hr'];
+        }
+
+        $saved = $this->employee->save_employee($person_data, $employee_data, $grants_array, $employeeId);
+
+        if ($saved) {
+            $employee_id = $employeeId > 0 ? $employeeId : ($person_data['person_id'] ?? 0);
+
+            $profile_data = [
+                'employee_id' => $employee_id,
+                'department_id' => $this->request->getPost('department_id', FILTER_SANITIZE_NUMBER_INT) ?: null,
+                'position_id' => $this->request->getPost('position_id', FILTER_SANITIZE_NUMBER_INT) ?: null,
+                'shift_id' => $this->request->getPost('shift_id', FILTER_SANITIZE_NUMBER_INT) ?: null,
+                'employee_number' => $this->request->getPost('employee_number', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+                'basic_salary' => $this->request->getPost('basic_salary') ?: 0,
+                'hourly_rate' => $this->request->getPost('hourly_rate') ?: 0,
+                'hire_date' => $this->request->getPost('hire_date') ?: null,
+                'employment_type' => $this->request->getPost('employment_type') ?: 'full_time',
+                'employment_status' => 'active',
+                'bank_name' => $this->request->getPost('bank_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+                'bank_account' => $this->request->getPost('bank_account', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+                'tax_id' => $this->request->getPost('tax_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+                'social_security_number' => $this->request->getPost('social_security_number', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+            ];
+
+            if ($this->employeeProfile->exists($employee_id)) {
+                $this->employeeProfile->update($employee_id, $profile_data);
+            } else {
+                $this->employeeProfile->insert($profile_data);
+            }
+
+            $message = $employeeId > 0 ? lang('Common.successful_update') : lang('Common.successful_adding');
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => $message,
+                'id' => $employee_id
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => lang('Common.error') . ' ' . $first_name . ' ' . $last_name,
+            'id' => -1
+        ]);
+    }
+
+    // ============ Employee Attachments ============
+
+    public function postUploadAttachment(): ResponseInterface
+    {
+        $employeeId = $this->request->getPost('employee_id', FILTER_SANITIZE_NUMBER_INT);
+        
+        if (!$employeeId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => lang('Hr.employee_not_found')
+            ]);
+        }
+
+        $file = $this->request->getFile('attachment_file');
+        
+        if (!$file || !$file->isValid()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => lang('Hr.please_select_file')
+            ]);
+        }
+
+        $allowedTypes = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+        $extension = $file->getExtension();
+        
+        if (!in_array(strtolower($extension), $allowedTypes)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => lang('Hr.allowed_file_types')
+            ]);
+        }
+
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        if ($file->getSize() > $maxSize) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => lang('Hr.max_file_size')
+            ]);
+        }
+
+        $uploadDir = FCPATH . 'uploads/employee_attachments/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $originalName = $file->getName();
+        $newName = time() . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
+        $filePath = 'uploads/employee_attachments/' . $newName;
+        $fullPath = $uploadDir . $newName;
+
+        if ($file->move($uploadDir, $newName)) {
+            $movedFile = new \CodeIgniter\Files\File($fullPath);
+            
+            $data = [
+                'employee_id' => $employeeId,
+                'doc_type' => $this->request->getPost('doc_type', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+                'title' => $this->request->getPost('title', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+                'file_name' => $originalName,
+                'file_path' => $filePath,
+                'mime_type' => $movedFile->getMimeType(),
+                'file_size' => filesize($fullPath),
+                'expiry_date' => $this->request->getPost('expiry_date') ?: null,
+                'is_verified' => 0,
+            ];
+
+            $this->employeeAttachment->insert($data);
+            $id = $this->employeeAttachment->getInsertID();
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => lang('Hr.attachment_uploaded'),
+                'id' => $id,
+                'file_name' => $originalName,
+                'file_size' => filesize($fullPath)
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => lang('Common.error')
+        ]);
+    }
+
+    public function postDeleteAttachment(): ResponseInterface
+    {
+        $id = $this->request->getPost('id', FILTER_SANITIZE_NUMBER_INT);
+        
+        if (!$id) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => lang('Common.error')
+            ]);
+        }
+
+        $attachment = $this->employeeAttachment->find($id);
+        
+        if (!$attachment) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => lang('Common.error')
+            ]);
+        }
+
+        $filePath = FCPATH . $attachment['file_path'];
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+
+        $this->employeeAttachment->delete($id);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => lang('Hr.attachment_deleted')
+        ]);
+    }
+
+    public function getDownloadAttachment(int $id): ResponseInterface
+    {
+        $attachment = $this->employeeAttachment->find($id);
+        
+        if (!$attachment) {
+            return redirect()->to('hr/employees')->with('error', lang('Common.error'));
+        }
+
+        $filePath = FCPATH . $attachment['file_path'];
+        
+        if (!file_exists($filePath)) {
+            return redirect()->to('hr/employees')->with('error', lang('Common.error'));
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', $attachment['mime_type'])
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $attachment['file_name'] . '"')
+            ->setHeader('Content-Length', filesize($filePath))
+            ->setBody(file_get_contents($filePath));
+    }
+
     // ============ Salary Rules ============
 
     public function getSalaryRules(): string
@@ -589,7 +1085,40 @@ class Hr extends Secure_Controller
         $request = $id ? $this->leaveRequest->find($id) : null;
         $data['request'] = $request;
         $data['leave_type_options'] = $this->leaveType->get_options();
+        
+        // Get leave balances for current employee
+        $employeeId = $this->session->get('person_id');
+        $data['leave_balances'] = $this->getEmployeeLeaveBalances($employeeId);
+        
         return view('hr/leave/form', $data);
+    }
+    
+    private function getEmployeeLeaveBalances(int $employeeId): array
+    {
+        $leaveTypes = $this->leaveType->get_all_active();
+        $balances = [];
+        $db = db_connect();
+        
+        foreach ($leaveTypes as $type) {
+            // Get approved leave days for this type
+            $approvedDays = $db->table('leave_requests')
+                ->select('COALESCE(SUM(total_days), 0) as used_days')
+                ->where('employee_id', $employeeId)
+                ->where('leave_type_id', $type['id'])
+                ->where('status', 'approved')
+                ->get()
+                ->getRowArray();
+            
+            $balances[] = [
+                'type_id' => $type['id'],
+                'type_name' => $type['name'],
+                'total_days' => $type['default_days'],
+                'used_days' => $approvedDays['used_days'] ?? 0,
+                'remaining' => ($type['default_days'] ?? 0) - ($approvedDays['used_days'] ?? 0)
+            ];
+        }
+        
+        return $balances;
     }
 
     public function postSaveLeaveRequest(): ResponseInterface

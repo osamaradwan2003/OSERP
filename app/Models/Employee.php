@@ -140,8 +140,12 @@ class Employee extends Person
                 $employee_data['person_id'] = $employee_id = $person_data['person_id'];
                 $success = $builder->insert($employee_data);
             } else {
-                $builder->where('person_id', $employee_id);
-                $success = $builder->update($employee_data);
+                if (!empty($employee_data)) {
+                    $builder->where('person_id', $employee_id);
+                    $success = $builder->update($employee_data);
+                } else {
+                    $success = true;
+                }
             }
 
             // We have either inserted or updated a new employee, now lets set permissions.

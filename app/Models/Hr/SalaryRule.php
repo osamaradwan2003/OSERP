@@ -69,21 +69,20 @@ class SalaryRule extends Model
         $builder->select('r.*, g.type as group_type');
         $builder->join('salary_rule_groups g', 'g.id = r.group_id', 'left');
         $builder->where('r.is_active', 1);
+        
         $builder->groupStart();
         $builder->where('r.scope', 'global');
-        $builder->orWhere(function($q) use ($departmentId) {
-            $q->where('r.scope', 'department');
-            $q->where('r.scope_id', $departmentId);
-        });
-        $builder->orWhere(function($q) use ($positionId) {
-            $q->where('r.scope', 'position');
-            $q->where('r.scope_id', $positionId);
-        });
-        $builder->orWhere(function($q) use ($employeeId) {
-            $q->where('r.scope', 'employee');
-            $q->where('r.scope_id', $employeeId);
-        });
+        $builder->where('(r.scope_id IS NULL OR r.scope_id = 0)', null, false);
+        
+        if ($departmentId !== null) {
+            $builder->orWhere(['r.scope' => 'department', 'r.scope_id' => $departmentId]);
+        }
+        if ($positionId !== null) {
+            $builder->orWhere(['r.scope' => 'position', 'r.scope_id' => $positionId]);
+        }
+        $builder->orWhere(['r.scope' => 'employee', 'r.scope_id' => $employeeId]);
         $builder->groupEnd();
+        
         $builder->orderBy('r.priority', 'ASC');
 
         return $builder->get()->getResultArray();
