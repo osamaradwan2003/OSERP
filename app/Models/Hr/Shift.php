@@ -21,7 +21,14 @@ class Shift extends Model
 
     public function get_all_active(): array
     {
-        return $this->where('is_active', 1)->findAll();
+        return $this->db->table('shifts')
+            ->select('id, name, code, start_time, end_time, grace_period_minutes,
+                working_hours, overtime_threshold_minutes, night_shift_start,
+                night_shift_end, is_night_shift, is_active, created_at, updated_at')
+            ->where('is_active', 1)
+            ->orderBy('name', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 
     public function get_options(): array

@@ -124,4 +124,72 @@ $routes->group('manufacturing', function($routes) {
     $routes->get('reports/cost-variance', 'Manufacturing_reports::getCostVariance');
 });
 
+// HR module routes
+$routes->group('hr', function($routes) {
+    // Dashboard
+    $routes->get('/', 'Hr::getIndex');
+    
+    // Departments
+    $routes->get('departments', 'Hr::getDepartments');
+    $routes->get('department/(:num)', 'Hr::getDepartment/$1');
+    $routes->get('department', 'Hr::getDepartment');
+    $routes->post('department/save', 'Hr::postSaveDepartment');
+    $routes->post('department/delete', 'Hr::postDeleteDepartment');
+    
+    // Positions
+    $routes->get('positions', 'Hr::getPositions');
+    $routes->get('position/(:num)', 'Hr::getPosition/$1');
+    $routes->get('position', 'Hr::getPosition');
+    $routes->post('position/save', 'Hr::postSavePosition');
+    $routes->post('position/delete', 'Hr::postDeletePosition');
+    
+    // Shifts
+    $routes->get('shifts', 'Hr::getShifts');
+    $routes->get('shift/(:num)', 'Hr::getShift/$1');
+    $routes->get('shift', 'Hr::getShift');
+    $routes->post('shift/save', 'Hr::postSaveShift');
+    $routes->post('shift/delete', 'Hr::postDeleteShift');
+    $routes->post('shift/assign', 'Hr::postAssignShift');
+    $routes->get('employee/(:num)/shifts', 'Hr::getEmployeeShifts/$1');
+    
+    // Employee Profiles
+    $routes->get('profiles', 'Hr::getProfiles');
+    $routes->get('profile/(:num)', 'Hr::getProfile/$1');
+    $routes->get('profile', 'Hr::getProfile');
+    $routes->post('profile/save', 'Hr::postSaveProfile');
+    
+    // Salary Rules
+    $routes->get('salary_rules', 'Hr::getSalaryRules');
+    $routes->get('salary_rule/(:num)', 'Hr::getSalaryRule/$1');
+    $routes->get('salary_rule', 'Hr::getSalaryRule');
+    $routes->post('salary_rule/save', 'Hr::postSaveSalaryRule');
+    $routes->post('salary_rule/delete', 'Hr::postDeleteSalaryRule');
+    $routes->get('salary_rule_groups', 'Hr::getSalaryRuleGroups');
+    $routes->post('salary_rule_group/save', 'Hr::postSaveSalaryRuleGroup');
+    $routes->get('employee/(:num)/salary_rules', 'Hr::getEmployeeSalaryRules/$1');
+    $routes->post('salary_rule/assign', 'Hr::postAssignSalaryRule');
+    $routes->post('salary_rule/remove', 'Hr::postRemoveSalaryRule');
+    
+    // Salary Calculation
+    $routes->get('calculate', 'Hr::getCalculate');
+    $routes->post('calculate', 'Hr::postCalculate');
+    $routes->get('payslip/(:num)/(:any)/(:any)', 'Hr::getPayslip/$1/$2/$3');
+    
+    // Attendance
+    $routes->get('attendance', 'Hr::getAttendance');
+    $routes->post('attendance/clock_in', 'Hr::postClockIn');
+    $routes->post('attendance/clock_out', 'Hr::postClockOut');
+    
+    // Leave Management
+    $routes->get('leave_requests', 'Hr::getLeaveRequests');
+    $routes->get('leave_request/(:num)', 'Hr::getLeaveRequest/$1');
+    $routes->get('leave_request', 'Hr::getLeaveRequest');
+    $routes->post('leave_request/save', 'Hr::postSaveLeaveRequest');
+    $routes->post('leave/approve', 'Hr::postApproveLeave');
+    $routes->post('leave/reject', 'Hr::postRejectLeave');
+    $routes->get('leave_types', 'Hr::getLeaveTypes');
+    $routes->get('leave_type/(:num)', 'Hr::getLeaveType/$1');
+    $routes->get('leave_type', 'Hr::getLeaveType');
+    $routes->post('leave_type/save', 'Hr::postSaveLeaveType');
+});
 

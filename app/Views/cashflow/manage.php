@@ -19,6 +19,44 @@
 
 <?= view('partial/header') ?>
 
+<style>
+.cashflow-page { padding: 20px 0; }
+.cashflow-breadcrumb { padding: 15px 0; }
+.cashflow-breadcrumb .breadcrumb { margin: 0; padding: 0; background: transparent; }
+.cashflow-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+.cashflow-page-header h1 { margin: 0; font-size: 28px; font-weight: 600; color: #2c3e50; }
+.cashflow-toolbar-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+.cashflow-toolbar-card .btn { border-radius: 8px; font-weight: 500; transition: all 0.2s; }
+.cashflow-toolbar-card .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.cashflow-toolbar-card .form-control { border-radius: 8px; }
+.cashflow-table-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+#table_holder { padding: 15px; }
+#table_holder .bootstrap-table .table { border-radius: 8px; overflow: hidden; }
+#table_holder .table thead th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+}
+</style>
+
 <script type="text/javascript">
 $(document).ready(function() {
 	<?= view('partial/bootstrap_tables_locale') ?>
@@ -126,108 +164,122 @@ $(document).ready(function() {
 });
 </script>
 
-<?= render_title_bar([
-	[
-		'label' => empty($is_drafts_list) ? 'Cashflow.drafts' : 'Cashflow.back_to_entries',
-		'icon' => empty($is_drafts_list) ? 'list-alt' : 'arrow-left',
-		'class' => 'btn-default',
-		'href' => empty($is_drafts_list) ? site_url('cashflow/drafts') : site_url('cashflow'),
-	],
-	[
-		'label' => 'Cashflow.manage_categories',
-		'icon' => 'tags',
-		'class' => 'btn-default',
-		'href' => site_url('cashflow_categories'),
-	],
-	[
-		'label' => 'Cashflow.manage_accounts',
-		'icon' => 'briefcase',
-		'class' => 'btn-default',
-		'href' => site_url('cashflow_accounts'),
-	],
-	[
-		'label' => 'Cashflow.new_entry',
-		'icon' => 'plus',
-		'class' => 'btn-info',
-		'href' => site_url('cashflow/view'),
-		'modal' => true,
-		'title' => 'Cashflow.new_entry',
-		'data' => ['btn_submit' => 'Common.submit'],
-	],
-]) ?>
+<div class="cashflow-page">
+	<div class="cashflow-breadcrumb">
+		<ol class="breadcrumb">
+			<li><a href="<?= site_url() ?>"><span class="glyphicon glyphicon-home"></span></a></li>
+			<li class="active"><?= lang('Cashflow.entries') ?></li>
+		</ol>
+	</div>
 
-<?php
-$toolbarActions = [
-	[
-		'label' => 'Common.show_deleted',
-		'icon' => 'eye-open',
-		'class' => 'btn-default',
-		'id' => 'toggle_deleted',
-	],
-	[
-		'label' => 'Common.delete',
-		'icon' => 'trash',
-		'class' => 'btn-default',
-		'id' => 'delete',
-	],
-	[
-		'label' => 'Common.restore',
-		'icon' => 'repeat',
-		'class' => 'btn-default',
-		'id' => 'restore',
-	],
-];
-if (!empty($show_post_button)) {
-	array_unshift($toolbarActions, [
-		'label' => 'Cashflow.accept',
-		'icon' => 'ok',
-		'class' => 'btn-success',
-		'id' => 'post',
-	]);
-}
-?>
-<?= render_table_toolbar(
-	$toolbarActions,
-	[
-		[
-			'type' => 'daterange',
-			'name' => 'daterangepicker',
-		],
-		[
-			'type' => 'select',
-			'name' => 'entry_type',
-			'options' => $types,
-			'selected' => '',
-		],
-		[
-			'type' => 'select',
-			'name' => 'status',
-			'options' => $statuses,
-			'selected' => $default_status,
-		],
-		[
-			'type' => 'select',
-			'name' => 'account_id',
-			'options' => $accounts,
-			'selected' => '',
-		],
-		[
-			'type' => 'select',
-			'name' => 'category_id',
-			'options' => $categories,
-			'selected' => '',
-		],
-	],
-	['id' => 'toolbar']
-) ?>
+	<div class="cashflow-page-header">
+		<h1><span class="glyphicon glyphicon-piggy-bank" style="color: #667eea; margin-right: 10px;"></span><?= lang('Cashflow.entries') ?></h1>
+	</div>
 
-<div id="table_holder">
-	<table id="table"></table>
+	<div class="cashflow-toolbar-card">
+		<div class="btn-toolbar" role="toolbar" style="margin-bottom: 15px;">
+			<?= render_title_bar([
+				[
+					'label' => empty($is_drafts_list) ? 'Cashflow.drafts' : 'Cashflow.back_to_entries',
+					'icon' => empty($is_drafts_list) ? 'list-alt' : 'arrow-left',
+					'class' => 'btn-default',
+					'href' => empty($is_drafts_list) ? site_url('cashflow/drafts') : site_url('cashflow'),
+				],
+				[
+					'label' => 'Cashflow.manage_categories',
+					'icon' => 'tags',
+					'class' => 'btn-default',
+					'href' => site_url('cashflow_categories'),
+				],
+				[
+					'label' => 'Cashflow.manage_accounts',
+					'icon' => 'briefcase',
+					'class' => 'btn-default',
+					'href' => site_url('cashflow_accounts'),
+				],
+				[
+					'label' => 'Cashflow.new_entry',
+					'icon' => 'plus',
+					'class' => 'btn-info',
+					'href' => site_url('cashflow/view'),
+					'modal' => true,
+					'title' => 'Cashflow.new_entry',
+					'data' => ['btn_submit' => 'Common.submit'],
+				],
+			]) ?>
+		</div>
 
-    <script>
-        console.log("tets");
-        console.log($("button#toggle_deleted").removeAttr("disabled"))
-    </script>
+		<?php
+		$toolbarActions = [
+			[
+				'label' => 'Common.show_deleted',
+				'icon' => 'eye-open',
+				'class' => 'btn-default',
+				'id' => 'toggle_deleted',
+			],
+			[
+				'label' => 'Common.delete',
+				'icon' => 'trash',
+				'class' => 'btn-default',
+				'id' => 'delete',
+			],
+			[
+				'label' => 'Common.restore',
+				'icon' => 'repeat',
+				'class' => 'btn-default',
+				'id' => 'restore',
+			],
+		];
+		if (!empty($show_post_button)) {
+			array_unshift($toolbarActions, [
+				'label' => 'Cashflow.accept',
+				'icon' => 'ok',
+				'class' => 'btn-success',
+				'id' => 'post',
+			]);
+		}
+		?>
+		<?= render_table_toolbar(
+			$toolbarActions,
+			[
+				[
+					'type' => 'daterange',
+					'name' => 'daterangepicker',
+				],
+				[
+					'type' => 'select',
+					'name' => 'entry_type',
+					'options' => $types,
+					'selected' => '',
+				],
+				[
+					'type' => 'select',
+					'name' => 'status',
+					'options' => $statuses,
+					'selected' => $default_status,
+				],
+				[
+					'type' => 'select',
+					'name' => 'account_id',
+					'options' => $accounts,
+					'selected' => '',
+				],
+				[
+					'type' => 'select',
+					'name' => 'category_id',
+					'options' => $categories,
+					'selected' => '',
+				],
+			],
+			['id' => 'toolbar']
+		) ?>
+	</div>
+
+	<div class="cashflow-table-card">
+		<div id="table_holder">
+			<table id="table"></table>
+		</div>
+	</div>
 </div>
 
 <?= view('partial/footer') ?>

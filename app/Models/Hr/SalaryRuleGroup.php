@@ -19,10 +19,13 @@ class SalaryRuleGroup extends Model
 
     public function get_all_active(): array
     {
-        return $this->where('is_active', 1)
+        return $this->db->table('salary_rule_groups')
+            ->select('id, name, type, calculation_order, is_active, created_at, updated_at')
+            ->where('is_active', 1)
             ->orderBy('calculation_order', 'ASC')
             ->orderBy('name', 'ASC')
-            ->findAll();
+            ->get()
+            ->getResultArray();
     }
 
     public function get_options(): array
@@ -36,17 +39,23 @@ class SalaryRuleGroup extends Model
 
     public function get_earning_groups(): array
     {
-        return $this->where('is_active', 1)
+        return $this->db->table('salary_rule_groups')
+            ->select('id, name, type, calculation_order, is_active, created_at, updated_at')
+            ->where('is_active', 1)
             ->where('type', 'earning')
             ->orderBy('calculation_order', 'ASC')
-            ->findAll();
+            ->get()
+            ->getResultArray();
     }
 
     public function get_deduction_groups(): array
     {
-        return $this->where('is_active', 1)
+        return $this->db->table('salary_rule_groups')
+            ->select('id, name, type, calculation_order, is_active, created_at, updated_at')
+            ->where('is_active', 1)
             ->where('type', 'deduction')
             ->orderBy('calculation_order', 'ASC')
-            ->findAll();
+            ->get()
+            ->getResultArray();
     }
 }

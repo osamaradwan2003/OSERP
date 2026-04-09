@@ -7,9 +7,7 @@
 <?= view('partial/header') ?>
 
 <style>
-.hr-page {
-    padding: 20px 0;
-}
+.hr-page { padding: 20px 0; }
 .page-header-bar {
     display: flex;
     justify-content: space-between;
@@ -24,80 +22,9 @@
     font-weight: 600;
     color: #2c3e50;
 }
-.page-header-bar h1 .glyphicon {
-    margin-right: 12px;
-    color: var(--primary);
-}
-.hr-table {
-    background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-.hr-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-}
-.hr-table thead th {
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    border: none;
-    padding: 15px;
-}
-.hr-table tbody td {
-    vertical-align: middle;
-    padding: 12px 15px;
-    border-color: #f0f0f0;
-}
-.hr-table tbody tr:hover {
-    background-color: #f8f9ff;
-}
-.hr-table .id-cell {
-    font-weight: 600;
-    color: #6c757d;
-    min-width: 50px;
-}
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-.status-badge.active {
-    background: #d4edda;
-    color: #155724;
-}
-.status-badge.inactive {
-    background: #e2e3e5;
-    color: #6c757d;
-}
-.level-badge {
-    background: #e3f2fd;
-    color: #1565c0;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-weight: 600;
-}
-.dept-badge {
-    background: #f3e5f5;
-    color: #6a1b9a;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 13px;
-}
-.breadcrumb-bar {
-    margin-bottom: 20px;
-}
-.breadcrumb-bar .breadcrumb {
-    margin: 0;
-    padding: 10px 0;
-    background: transparent;
-}
+.page-header-bar h1 .glyphicon { margin-right: 12px; color: var(--primary); }
+.breadcrumb-bar { margin-bottom: 20px; }
+.breadcrumb-bar .breadcrumb { margin: 0; padding: 10px 0; background: transparent; }
 </style>
 
 <div class="hr-page">
@@ -110,10 +37,7 @@
     </div>
 
     <div class="page-header-bar">
-        <h1>
-            <span class="glyphicon glyphicon-briefcase"></span>
-            <?= lang('Hr.positions') ?>
-        </h1>
+        <h1><span class="glyphicon glyphicon-briefcase"></span><?= lang('Hr.positions') ?></h1>
         <div>
             <button class="btn btn-primary btn-lg modal-dlg" data-btn-submit="<?= lang('Common.submit') ?>" 
                     data-href="<?= site_url('hr/position') ?>" title="<?= lang('Hr.new_position') ?>">
@@ -122,63 +46,89 @@
         </div>
     </div>
 
-    <div class="hr-table">
-        <table class="table table-striped table-hover">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" id="position_table">
             <thead>
                 <tr>
                     <th style="width: 60px;"><?= lang('Common.id') ?></th>
                     <th><?= lang('Hr.name') ?></th>
-                    <th style="width: 150px;"><?= lang('Hr.department') ?></th>
-                    <th style="width: 100px;"><?= lang('Hr.level') ?></th>
+                    <th><?= lang('Hr.department') ?></th>
+                    <th style="width: 80px;"><?= lang('Hr.level') ?></th>
+                    <th><?= lang('Hr.description') ?></th>
                     <th style="width: 100px;"><?= lang('Common.status') ?></th>
                     <th style="width: 80px;"><?= lang('Common.actions') ?></th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($positions as $position): ?>
+                <?php foreach ($positions as $pos): ?>
                     <tr>
-                        <td class="id-cell"><?= str_pad($position['id'], 4, '0', STR_PAD_LEFT) ?></td>
+                        <td><?= str_pad($pos['id'], 4, '0', STR_PAD_LEFT) ?></td>
+                        <td><strong><?= esc($pos['name']) ?></strong></td>
+                        <td><?= esc($pos['department_name'] ?? '—') ?></td>
+                        <td><?= esc($pos['level']) ?></td>
+                        <td class="text-muted"><?= esc($pos['description'] ?? '—') ?></td>
                         <td>
-                            <strong><?= esc($position['name']) ?></strong>
-                        </td>
-                        <td>
-                            <?php if (!empty($position['department_name'])): ?>
-                                <span class="dept-badge"><?= esc($position['department_name']) ?></span>
+                            <?php if ($pos['is_active']): ?>
+                                <span class="label label-success"><?= lang('Common.active') ?></span>
                             <?php else: ?>
-                                <span class="text-muted">—</span>
+                                <span class="label label-default"><?= lang('Common.inactive') ?></span>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <span class="level-badge">Lv. <?= $position['level'] ?></span>
-                        </td>
-                        <td>
-                            <?php if ($position['is_active']): ?>
-                                <span class="status-badge active"><?= lang('Common.active') ?></span>
-                            <?php else: ?>
-                                <span class="status-badge inactive"><?= lang('Common.inactive') ?></span>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-xs">
-                                <button class="btn btn-warning modal-dlg" data-btn-submit="<?= lang('Common.submit') ?>"
-                                        data-href="<?= site_url("hr/position/{$position['id']}") ?>" title="<?= lang('Common.edit') ?>">
-                                    <span class="glyphicon glyphicon-pencil"></span>
-                                </button>
-                            </div>
+                            <button class="btn btn-warning btn-xs modal-dlg" data-btn-submit="<?= lang('Common.submit') ?>"
+                                    data-href="<?= site_url("hr/position/{$pos['id']}") ?>" title="<?= lang('Common.edit') ?>">
+                                <span class="glyphicon glyphicon-pencil"></span>
+                            </button>
                         </td>
                     </tr>
                 <?php endforeach; ?>
-                <?php if (empty($positions)): ?>
-                    <tr>
-                        <td colspan="6" class="text-center text-muted" style="padding: 40px;">
-                            <span class="glyphicon glyphicon-folder-open" style="font-size: 48px; opacity: 0.3;"></span>
-                            <p style="margin-top: 15px;"><?= lang('Common.no_data') ?></p>
-                        </td>
-                    </tr>
-                <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
+
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    var buttons = document.querySelectorAll('button.modal-dlg');
+    buttons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var href = this.getAttribute('data-href') || this.getAttribute('href');
+            var title = this.getAttribute('title') || 'Form';
+            var btnSubmit = this.getAttribute('data-btn-submit') || 'Submit';
+            
+            BootstrapDialog.show({
+                title: title,
+                message: function(dialog) {
+                    var $content = $('<div style="padding:10px;"><div class="text-center"><span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Loading...</div></div>');
+                    $.get(href, function(data) {
+                        $content.html(data);
+                    });
+                    return $content;
+                },
+                size: BootstrapDialog.SIZE_NORMAL,
+                buttons: [{
+                    label: btnSubmit,
+                    cssClass: 'btn-primary',
+                    action: function(dialogRef) {
+                        var form = dialogRef.$modalBody.find('form');
+                        if (form.length && form[0].checkValidity()) {
+                            form.submit();
+                            dialogRef.close();
+                        } else if (form.length) {
+                            form[0].reportValidity();
+                        }
+                    }
+                }, {
+                    label: 'Close',
+                    action: function(dialogRef) {
+                        dialogRef.close();
+                    }
+                }]
+            });
+        });
+    });
+});
+</script>
 
 <?= view('partial/footer') ?>

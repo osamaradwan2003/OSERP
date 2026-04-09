@@ -41,11 +41,13 @@ class Position extends Model
 
     public function get_with_department(): array
     {
-        return $this->select('ospos_positions.*, ospos_departments.name as department_name')
-            ->join('ospos_departments', 'ospos_departments.id = ospos_positions.department_id', 'left')
-            ->where('ospos_positions.is_active', 1)
-            ->orderBy('ospos_departments.name', 'ASC')
-            ->orderBy('ospos_positions.level', 'ASC')
-            ->findAll();
+        return $this->db->table('positions p')
+            ->select('p.id, p.name, p.description, p.department_id, p.level, p.is_active, p.created_at, p.updated_at, d.name as department_name')
+            ->join('departments d', 'd.id = p.department_id', 'left')
+            ->where('p.is_active', 1)
+            ->orderBy('d.name', 'ASC')
+            ->orderBy('p.level', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 }

@@ -158,9 +158,10 @@
             <?= lang('Hr.leave_requests') ?>
         </h1>
         <div>
-            <a href="<?= site_url('hr/leave_request') ?>" class="btn btn-primary btn-lg modal-dlg" data-btn-submit="<?= lang('Common.submit') ?>">
+            <button class="btn btn-primary btn-lg modal-dlg" data-btn-submit="<?= lang('Common.submit') ?>" 
+                    data-href="<?= site_url('hr/leave_request') ?>" title="<?= lang('Hr.new_request') ?>">
                 <span class="glyphicon glyphicon-plus"></span> <?= lang('Hr.new_request') ?>
-            </a>
+            </button>
         </div>
     </div>
 
@@ -243,7 +244,47 @@
 </div>
 
 <script type="text/javascript">
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
+    var buttons = document.querySelectorAll('button.modal-dlg');
+    buttons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var href = this.getAttribute('data-href') || this.getAttribute('href');
+            var title = this.getAttribute('title') || 'Form';
+            var btnSubmit = this.getAttribute('data-btn-submit') || 'Submit';
+            
+            BootstrapDialog.show({
+                title: title,
+                message: function(dialog) {
+                    var $content = $('<div style="padding:10px;"><div class="text-center"><span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Loading...</div></div>');
+                    $.get(href, function(data) {
+                        $content.html(data);
+                    });
+                    return $content;
+                },
+                size: BootstrapDialog.SIZE_NORMAL,
+                buttons: [{
+                    label: btnSubmit,
+                    cssClass: 'btn-primary',
+                    action: function(dialogRef) {
+                        var form = dialogRef.$modalBody.find('form');
+                        if (form.length && form[0].checkValidity()) {
+                            form.submit();
+                            dialogRef.close();
+                        } else if (form.length) {
+                            form[0].reportValidity();
+                        }
+                    }
+                }, {
+                    label: 'Close',
+                    action: function(dialogRef) {
+                        dialogRef.close();
+                    }
+                }]
+            });
+        });
+    });
+    
     $('.btn-approve').on('click', function() {
         if (!confirm('<?= lang('Hr.confirm_approve') ?>')) return;
         

@@ -22,34 +22,41 @@ class EmployeeProfile extends Model
 
     public function get_info(int $employeeId): ?array
     {
-        return $this->select('ospos_employee_profiles.*,
-                ospos_departments.name as department_name,
-                ospos_positions.name as position_name,
-                ospos_shifts.name as shift_name,
-                ospos_shifts.start_time as shift_start_time,
-                ospos_shifts.end_time as shift_end_time,
-                ospos_shifts.working_hours as shift_working_hours')
-            ->join('ospos_departments', 'ospos_departments.id = ospos_employee_profiles.department_id', 'left')
-            ->join('ospos_positions', 'ospos_positions.id = ospos_employee_profiles.position_id', 'left')
-            ->join('ospos_shifts', 'ospos_shifts.id = ospos_employee_profiles.shift_id', 'left')
-            ->where('ospos_employee_profiles.employee_id', $employeeId)
-            ->first();
+        return $this->db->table('employee_profiles ep')
+            ->select('ep.*,
+                d.name as department_name,
+                p.name as position_name,
+                s.name as shift_name,
+                s.start_time as shift_start_time,
+                s.end_time as shift_end_time,
+                s.working_hours as shift_working_hours')
+            ->join('departments d', 'd.id = ep.department_id', 'left')
+            ->join('positions p', 'p.id = ep.position_id', 'left')
+            ->join('shifts s', 's.id = ep.shift_id', 'left')
+            ->where('ep.employee_id', $employeeId)
+            ->get()
+            ->getRowArray();
     }
 
     public function get_all_with_details(): array
     {
-        return $this->select('ospos_employee_profiles.*,
-                ospos_people.first_name, ospos_people.last_name, ospos_people.email,
-                ospos_departments.name as department_name,
-                ospos_positions.name as position_name,
-                ospos_shifts.name as shift_name')
-            ->join('ospos_employees', 'ospos_employees.person_id = ospos_employee_profiles.employee_id', 'inner')
-            ->join('ospos_people', 'ospos_people.person_id = ospos_employee_profiles.employee_id', 'inner')
-            ->join('ospos_departments', 'ospos_departments.id = ospos_employee_profiles.department_id', 'left')
-            ->join('ospos_positions', 'ospos_positions.id = ospos_employee_profiles.position_id', 'left')
-            ->join('ospos_shifts', 'ospos_shifts.id = ospos_employee_profiles.shift_id', 'left')
-            ->where('ospos_employees.deleted', 0)
-            ->findAll();
+        return $this->db->table('employee_profiles ep')
+            ->select('ep.id, ep.employee_id, ep.department_id, ep.position_id, ep.shift_id, ep.employee_number,
+                ep.basic_salary, ep.hourly_rate, ep.hire_date, ep.termination_date,
+                ep.employment_type, ep.employment_status, ep.bank_name, ep.bank_account,
+                ep.tax_id, ep.social_security_number, ep.created_at, ep.updated_at,
+                people.first_name, people.last_name, people.email,
+                d.name as department_name,
+                pos.name as position_name,
+                s.name as shift_name')
+            ->join('employees e', 'e.person_id = ep.employee_id', 'inner')
+            ->join('people', 'people.person_id = ep.employee_id', 'inner')
+            ->join('departments d', 'd.id = ep.department_id', 'left')
+            ->join('positions pos', 'pos.id = ep.position_id', 'left')
+            ->join('shifts s', 's.id = ep.shift_id', 'left')
+            ->where('e.deleted', 0)
+            ->get()
+            ->getResultArray();
     }
 
     public function save_profile(array $data, ?int $profileId = null): bool

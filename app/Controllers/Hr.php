@@ -82,7 +82,7 @@ class Hr extends Secure_Controller
 
     public function getDepartments(): string
     {
-        $data['departments'] = $this->department->get_with_children();
+        $data['departments'] = $this->department->get_with_parents();
         return view('hr/departments/manage', $data);
     }
 
@@ -567,9 +567,19 @@ class Hr extends Secure_Controller
     public function getLeaveRequests(): string
     {
         $status = $this->request->getGet('status');
-        $data['requests'] = $status === 'pending'
-            ? $this->leaveRequest->get_pending_requests()
-            : $this->leaveRequest->findAll();
+        if ($status === 'pending') {
+            $data['requests'] = $this->leaveRequest->get_pending_requests();
+        } elseif ($status) {
+            $data['requests'] = $this->leaveRequest->select('ospos_leave_requests.*, ospos_leave_types.name as leave_type_name,
+                    ospos_people.first_name, ospos_people.last_name')
+                ->join('ospos_leave_types', 'ospos_leave_types.id = ospos_leave_requests.leave_type_id', 'left')
+                ->join('ospos_people', 'ospos_people.person_id = ospos_leave_requests.employee_id', 'inner')
+                ->where('ospos_leave_requests.status', $status)
+                ->orderBy('ospos_leave_requests.created_at', 'DESC')
+                ->findAll();
+        } else {
+            $data['requests'] = $this->leaveRequest->get_all_with_details();
+        }
         $data['status_filter'] = $status;
         return view('hr/leave/manage', $data);
     }
@@ -666,6 +676,12 @@ class Hr extends Secure_Controller
     public function getLeaveTypes(): string
     {
         $data['leave_types'] = $this->leaveType->findAll();
+        return view('hr/leave/types_manage', $data);
+    }
+
+    public function getLeaveType(int $id = 0): string
+    {
+        $data['leave_type'] = $id ? $this->leaveType->find($id) : null;
         return view('hr/leave/types', $data);
     }
 

@@ -21,20 +21,30 @@ class SalaryRule extends Model
 
     public function get_all_active(): array
     {
-        return $this->select('ospos_salary_rules.*, ospos_salary_rule_groups.name as group_name, ospos_salary_rule_groups.type as group_type')
-            ->join('ospos_salary_rule_groups', 'ospos_salary_rule_groups.id = ospos_salary_rules.group_id', 'left')
-            ->where('ospos_salary_rules.is_active', 1)
-            ->orderBy('ospos_salary_rules.priority', 'ASC')
-            ->findAll();
+        return $this->db->table('salary_rules r')
+            ->select('r.id, r.group_id, r.name, r.code, r.rule_type, r.value, r.formula, r.based_on,
+                      r.conditions, r.attendance_type, r.attendance_rate, r.scope, r.scope_id,
+                      r.is_active, r.is_recurring, r.priority, r.description, r.created_at, r.updated_at,
+                      g.name as group_name, g.type as group_type')
+            ->join('salary_rule_groups g', 'g.id = r.group_id', 'left')
+            ->where('r.is_active', 1)
+            ->orderBy('r.priority', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 
     public function get_all_with_group(): array
     {
-        return $this->select('ospos_salary_rules.*, ospos_salary_rule_groups.name as group_name, ospos_salary_rule_groups.type as group_type')
-            ->join('ospos_salary_rule_groups', 'ospos_salary_rule_groups.id = ospos_salary_rules.group_id', 'left')
-            ->orderBy('ospos_salary_rule_groups.calculation_order', 'ASC')
-            ->orderBy('ospos_salary_rules.priority', 'ASC')
-            ->findAll();
+        return $this->db->table('salary_rules r')
+            ->select('r.id, r.group_id, r.name, r.code, r.rule_type, r.value, r.formula, r.based_on,
+                      r.conditions, r.attendance_type, r.attendance_rate, r.scope, r.scope_id,
+                      r.is_active, r.is_recurring, r.priority, r.description, r.created_at, r.updated_at,
+                      g.name as group_name, g.type as group_type, g.calculation_order')
+            ->join('salary_rule_groups g', 'g.id = r.group_id', 'left')
+            ->orderBy('g.calculation_order', 'ASC')
+            ->orderBy('r.priority', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 
     public function get_by_group(int $groupId): array
@@ -55,26 +65,26 @@ class SalaryRule extends Model
 
     public function get_rules_for_employee(int $employeeId, ?int $departmentId = null, ?int $positionId = null): array
     {
-        $builder = $this->db->table('ospos_salary_rules');
-        $builder->select('ospos_salary_rules.*, ospos_salary_rule_groups.type as group_type');
-        $builder->join('ospos_salary_rule_groups', 'ospos_salary_rule_groups.id = ospos_salary_rules.group_id', 'left');
-        $builder->where('ospos_salary_rules.is_active', 1);
+        $builder = $this->db->table('salary_rules r');
+        $builder->select('r.*, g.type as group_type');
+        $builder->join('salary_rule_groups g', 'g.id = r.group_id', 'left');
+        $builder->where('r.is_active', 1);
         $builder->groupStart();
-        $builder->where('ospos_salary_rules.scope', 'global');
+        $builder->where('r.scope', 'global');
         $builder->orWhere(function($q) use ($departmentId) {
-            $q->where('ospos_salary_rules.scope', 'department');
-            $q->where('ospos_salary_rules.scope_id', $departmentId);
+            $q->where('r.scope', 'department');
+            $q->where('r.scope_id', $departmentId);
         });
         $builder->orWhere(function($q) use ($positionId) {
-            $q->where('ospos_salary_rules.scope', 'position');
-            $q->where('ospos_salary_rules.scope_id', $positionId);
+            $q->where('r.scope', 'position');
+            $q->where('r.scope_id', $positionId);
         });
         $builder->orWhere(function($q) use ($employeeId) {
-            $q->where('ospos_salary_rules.scope', 'employee');
-            $q->where('ospos_salary_rules.scope_id', $employeeId);
+            $q->where('r.scope', 'employee');
+            $q->where('r.scope_id', $employeeId);
         });
         $builder->groupEnd();
-        $builder->orderBy('ospos_salary_rules.priority', 'ASC');
+        $builder->orderBy('r.priority', 'ASC');
 
         return $builder->get()->getResultArray();
     }

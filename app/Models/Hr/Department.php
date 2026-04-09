@@ -22,25 +22,15 @@ class Department extends Model
         return $this->where('is_active', 1)->findAll();
     }
 
-    public function get_with_children(): array
+    public function get_with_parents(): array
     {
-        $departments = $this->where('is_active', 1)->findAll();
-        return $this->buildTree($departments);
-    }
-
-    private function buildTree(array $departments, ?int $parentId = null): array
-    {
-        $tree = [];
-        foreach ($departments as $dept) {
-            if ($dept['parent_id'] === $parentId) {
-                $children = $this->buildTree($departments, $dept['id']);
-                if ($children) {
-                    $dept['children'] = $children;
-                }
-                $tree[] = $dept;
-            }
-        }
-        return $tree;
+        return $this->db->table('departments d1')
+            ->select('d1.id, d1.name, d1.description, d1.parent_id, d1.is_active, d1.created_at, d1.updated_at, d2.name as parent_name')
+            ->join('departments d2', 'd2.id = d1.parent_id', 'left')
+            ->where('d1.is_active', 1)
+            ->orderBy('d1.name', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 
     public function get_options(): array

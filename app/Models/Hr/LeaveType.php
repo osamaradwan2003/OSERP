@@ -19,7 +19,12 @@ class LeaveType extends Model
 
     public function get_all_active(): array
     {
-        return $this->where('is_active', 1)->findAll();
+        return $this->db->table('leave_types')
+            ->select('id, name, code, paid_unpaid, default_days, is_active, created_at, updated_at')
+            ->where('is_active', 1)
+            ->orderBy('name', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 
     public function get_options(): array
@@ -33,6 +38,11 @@ class LeaveType extends Model
 
     public function get_paid_types(): array
     {
-        return $this->where('is_active', 1)->where('paid_unpaid', 'paid')->findAll();
+        return $this->db->table('leave_types')
+            ->select('id, name, code, paid_unpaid, default_days, is_active, created_at, updated_at')
+            ->where('is_active', 1)
+            ->where('paid_unpaid', 'paid')
+            ->get()
+            ->getResultArray();
     }
 }

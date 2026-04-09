@@ -5,30 +5,52 @@
  */
 ?>
 
-<?= form_open('taxes/save_tax_jurisdictions/', ['id' => 'tax_jurisdictions_form', 'class' => 'form-horizontal']) ?>
-    <div id="config_wrapper">
-        <fieldset id="config_info">
+<style>
+.tax-config-section { margin-bottom: 20px; }
+.tax-config-section .panel { border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.tax-config-section .panel-heading {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    font-weight: 600;
+}
+.tax-config-section .panel-body { padding: 20px; }
+.tax-config-section .form-group { margin-bottom: 15px; }
+.tax-config-section .form-control { border-radius: 6px; }
+.tax-jurisdiction-block {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid #667eea;
+}
+</style>
 
-            <div id="required_fields_message"><?= lang('Common.fields_required_message') ?></div>
-            <ul id="tax_jurisdictions_error_message_box" class="error_message_box"></ul>
+<div class="tax-config-section">
+    <?= form_open('taxes/save_tax_jurisdictions/', ['id' => 'tax_jurisdictions_form', 'class' => 'form-horizontal']) ?>
+        <div id="config_wrapper">
+            <fieldset id="config_info">
 
-            <div id="tax_jurisdictions">
-                <?= view('partial/tax_jurisdictions') ?>
-            </div>
+                <div id="required_fields_message"><?= lang('Common.fields_required_message') ?></div>
+                <ul id="tax_jurisdictions_error_message_box" class="error_message_box"></ul>
 
-            <?= form_submit([
-                'name'  => 'submit_tax_jurisdictions',
-                'id'    => 'submit_tax_jurisdictions',
-                'value' => lang('Common.submit'),
-                'class' => 'btn btn-primary btn-sm pull-right'
-            ]) ?>
+                <div id="tax_jurisdictions">
+                    <?= view('partial/tax_jurisdictions') ?>
+                </div>
 
-        </fieldset>
-    </div>
-<?= form_close() ?>
+                <?= form_submit([
+                    'name'  => 'submit_tax_jurisdictions',
+                    'id'    => 'submit_tax_jurisdictions',
+                    'value' => lang('Common.submit'),
+                    'class' => 'btn btn-primary btn-sm pull-right'
+                ]) ?>
+
+            </fieldset>
+        </div>
+    <?= form_close() ?>
+</div>
 
 <script type="text/javascript">
-    // Validation and submit handling
     $(document).ready(function() {
         var tax_jurisdictions_count = <?= sizeof($tax_jurisdictions) ?>;
         if (tax_jurisdictions_count == 0) {
@@ -77,7 +99,6 @@
         };
         init_add_remove_tax_jurisdiction();
 
-        // Run validator once for all fields
         $.validator.addMethod('check4TaxJurisdictionDups', function(value, element) {
             var value_count = 0;
             $("input[name='jurisdiction_name[]']").each(function() {

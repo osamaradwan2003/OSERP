@@ -25,7 +25,6 @@ return [
     'leave_approved' => 'Leave request approved',
     'leave_rejected' => 'Leave request rejected',
     'confirm_approve' => 'Approve this leave request?',
-    'rejection_reason' => 'Rejection Reason',
 
     // Departments
     'new_department' => 'New Department',
@@ -39,6 +38,7 @@ return [
     // Shifts
     'new_shift' => 'New Shift',
     'shift_name' => 'Shift Name',
+    'shift_code' => 'Shift Code',
     'start_time' => 'Start Time',
     'end_time' => 'End Time',
     'working_hours' => 'Working Hours',
@@ -109,6 +109,15 @@ return [
     'assign_rule' => 'Assign Rule',
     'custom_value' => 'Custom Value Override',
     'leave_empty_default' => 'Leave empty to use rule default',
+    'attendance_type' => 'Attendance Type',
+    'attendance_rate' => 'Attendance Rate',
+    'conditions' => 'Conditions',
+    'fixed' => 'Fixed',
+    'percentage' => 'Percentage',
+    'conditional' => 'Conditional',
+    'none' => 'None',
+    'global' => 'Global',
+    'position' => 'Position',
 
     // Salary Calculation
     'calculate' => 'Calculate',
@@ -166,6 +175,10 @@ return [
     'default_days' => 'Default Days',
     'add_leave_type' => 'Add Leave Type',
     'rejection_reason' => 'Rejection Reason',
+    'leave_name' => 'Leave Name',
+    'leave_code' => 'Leave Code',
+    'new_leave_type' => 'New Leave Type',
+    'days' => 'days',
 
     // Common
     'name' => 'Name',
@@ -175,4 +188,15 @@ return [
     'basic_info' => 'Basic Information',
     'employment_info' => 'Employment Information',
     'salary_info' => 'Salary Information',
+    'employee' => 'Employee',
+    'edit' => 'Edit',
+    'add_rule' => 'Add Rule',
+    'remove_rule' => 'Remove Rule',
+    'rule_assigned' => 'Rule assigned successfully',
+    'rule_removed' => 'Rule removed successfully',
+    'shift_assigned' => 'Shift assigned successfully',
+    'no_shifts_assigned' => 'No shifts assigned',
+    'basic_salary' => 'Basic Salary',
+    'gross_salary' => 'Gross Salary',
+    'attendance' => 'Attendance',
 ];
